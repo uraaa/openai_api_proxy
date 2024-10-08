@@ -3,18 +3,26 @@ from flask import Flask, request, jsonify
 import requests
 
 app = Flask(__name__)
-BASE_URL = "https://api.openai.com"
+OPENAI_URL = "https://api.openai.com"
+PROXY_AUTH_KEY = '123'
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 @app.route("/<path:endpoint>", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 def proxy_request(endpoint):
-    url = f"{BASE_URL}/{endpoint}"
+
+    # check proxy auth
+    if request.headers.get('X-PROXY-AUTH-KEY') != PROXY_AUTH_KEY:
+        return jsonify('Unauthorized'), 401
+
+    # prepare data
+    url = f"{OPENAI_URL}/{endpoint}"
     headers = {
         'Content-Type': 'application/json',
         'Authorization': request.headers.get('Authorization')
     }
 
+    # get response from openai
     response = requests.request(
         url=url,
         method=request.method,
@@ -22,7 +30,7 @@ def proxy_request(endpoint):
         headers=headers
     )
 
-    return response.json()
+    return response.json(), response.status_code
 
 
 if __name__ == "__main__":
