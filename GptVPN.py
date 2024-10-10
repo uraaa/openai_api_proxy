@@ -17,21 +17,17 @@ def proxy_request(endpoint):
 
     # prepare data
     url = f"{OPENAI_URL}/{endpoint}"
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': request.headers.get('Authorization')
-    }
+    headers = {'Authorization': request.headers.get('Authorization')}
 
     # get response from openai
     response = requests.request(
         url=url,
         method=request.method,
-        data=request.json,
+        json=request.json,
         headers=headers
     )
 
     return response.json(), response.status_code
-
 
 if __name__ == "__main__":
     app.run()
