@@ -1,10 +1,14 @@
 import logging
+import os
 from flask import Flask, request, jsonify, Response
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 OPENAI_URL = "https://api.openai.com"
-PROXY_AUTH_KEY = 'cwAAlSxYdTx4R9toslFWxBdh'
+PROXY_AUTH_KEY = os.getenv('PROXY_AUTH_KEY')
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
@@ -18,7 +22,7 @@ def proxy_request(endpoint):
     url = f"{OPENAI_URL}/{endpoint}"
     headers = {
         'Authorization': request.headers.get('Authorization'),
-        }
+    }
 
     # get response from openai
     response = requests.request(
@@ -27,7 +31,6 @@ def proxy_request(endpoint):
         json=request.json,
         headers=headers,
     )
-
 
     # Extract important headers
     response_headers = []
@@ -40,6 +43,7 @@ def proxy_request(endpoint):
     for header in meta_headers:
         if response.headers.get(header):
             response_headers.append((header, response.headers.get(header)))
+
     return Response(response.content, response.status_code, response_headers)
 
 
