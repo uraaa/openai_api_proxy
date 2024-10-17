@@ -44,8 +44,10 @@ def proxy_request(endpoint):
         if response.headers.get(header):
             response_headers.append((header, response.headers.get(header)))
 
-    return Response(response.content, response.status_code, response_headers)
-
+    if response.headers.get('Content-Type') == 'application/json':
+        return jsonify(response.json()), response.status_code, response_headers
+    else:
+        return Response(response.content, response.status_code, response_headers)
 
 if __name__ == "__main__":
     app.run()
